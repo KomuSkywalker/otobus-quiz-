@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BBM4MESJV5"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BBM4MESJV5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-BBM4MESJV5');
-</script>
+      gtag('config', 'G-BBM4MESJV5');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Otobüs Quiz</title>
     
     <link rel="icon" href="/static/bus-icon.png" type="image/x-icon">
-
     <link rel="stylesheet" href="/static/style.css">
 
     <style>
+        /* Paylaş Butonu Stili */
         .share-btn-final {
             background-color: #25D366 !important;
             color: white !important;
@@ -239,9 +238,9 @@
             if(secilen === dogru) {
                 dogruAdedi++;
                 dogruSayisi += 10;
-                efektCal('dogru'); // SADECE DOĞRU YAPINCA SES ÇIKAR
+                efektCal('dogru');
             } else {
-                // YANLIŞ CEVAPTA SES YOK! (Sessizce geçiyoruz)
+                // Yanlış cevapta ses yok
             }
             guncellePuan();
             suankiSoruIndex++;
@@ -262,13 +261,11 @@
             const detay = document.getElementById('sonuc-detay');
 
             if(dogruAdedi >= 15) {
-                // KAZANDI (Zafer Müziği)
                 resim.src = "/static/imammoglu-zafer.png";
                 baslik.style.display = "block";
                 baslik.style.color = "green";
                 efektCal('dogru'); 
             } else {
-                // KAYBETTİ (Hüzünlü Müzik SADECE BURADA)
                 resim.src = "/static/imammoglu-hata.png";
                 baslik.style.display = "none";
                 efektCal('yanlis'); 
@@ -278,15 +275,23 @@
             ekranGoster('screen-result');
         }
 
+        // --- DÜZELTİLEN KISIM ---
         function sonucuPaylas() {
-            const metin = `Otobüs Quiz'de 20 soruda ${dogruAdedi} doğru bildim! İstanbul'un kurduyum diyorsan sen de dene: http://cargargatagon.pythonanywhere.com`;
+            // Yeni domain adresi eklendi
+            const metin = `Otobüs Quiz'de 20 soruda ${dogruAdedi} doğru bildim! İstanbul'un kurduyum diyorsan sen de dene: https://www.otobusquiz.com.tr`;
+            
             if (navigator.share) {
-                navigator.share({ title: 'Otobüs Quiz Sonucum', text: metin, url: 'http://cargargatagon.pythonanywhere.com' }).catch(console.error);
+                navigator.share({ 
+                    title: 'Otobüs Quiz Sonucum', 
+                    text: metin, 
+                    url: 'https://www.otobusquiz.com.tr' 
+                }).catch(console.error);
             } else {
                 navigator.clipboard.writeText(metin);
                 alert("Sonuç kopyalandı! WhatsApp'ta yapıştırabilirsin.");
             }
         }
+        // -------------------------
 
         function liderleriGoster() {
             ekranGoster('screen-leaderboard');
