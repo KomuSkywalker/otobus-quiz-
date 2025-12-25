@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory # send_from_directory eklendi
 import pandas as pd
 import os
 import requests # Firebase ile konuşmak için bu kütüphaneyi ekledik
@@ -10,11 +10,17 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 EXCEL_FILE = os.path.join(BASE_DIR, 'sorular.xlsx')
 
-# --- FIREBASE AYARI (Burası Değişti) ---
+# --- FIREBASE AYARI ---
 # Harita projesindeki veritabanını kullanıyoruz, sonuna /bus_scores.json ekledik.
 FIREBASE_DB_URL = "https://map-9488e-default-rtdb.firebaseio.com/bus_scores.json"
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+
+# --- GOOGLE ADSENSE İZNİ (ADS.TXT) ---
+@app.route('/ads.txt')
+def ads_txt():
+    # static klasörü içindeki ads.txt dosyasını dış dünyaya açar
+    return send_from_directory('static', 'ads.txt')
 
 # --- SAYFALAR ---
 @app.route('/')
@@ -107,7 +113,6 @@ def skor_kaydet():
         if not isim: isim = "Anonim"
         bugun = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-        # SQLite Yerine Firebase'e Gönderiyoruz
         yeni_skor = {
             "isim": isim,
             "puan": puan,
@@ -115,7 +120,6 @@ def skor_kaydet():
             "tarih": bugun
         }
         
-        # requests kütüphanesi ile internete (Firebase'e) yazıyoruz
         requests.post(FIREBASE_DB_URL, json=yeni_skor)
 
         return jsonify({"mesaj": "Kaydedildi!"})
@@ -127,7 +131,6 @@ def skor_kaydet():
 @app.route('/api/liderlik')
 def liderlik_tablosu():
     try:
-        # Firebase'den verileri çek
         response = requests.get(FIREBASE_DB_URL)
         
         if response.status_code != 200 or not response.json():
@@ -135,20 +138,16 @@ def liderlik_tablosu():
 
         veriler = response.json()
         
-        # Firebase verisi {"-Key1": {veri}, "-Key2": {veri}} şeklinde gelir.
-        # Bunu listeye çevirmemiz lazım: [{veri}, {veri}]
         skor_listesi = []
-        for key, value in veriler.items():
-            skor_listesi.append(value)
+        if isinstance(veriler, dict):
+            for key, value in veriler.items():
+                skor_listesi.append(value)
+        elif isinstance(veriler, list):
+             skor_listesi = [v for v in veriler if v]
         
-        # Puana göre BÜYÜKTEN KÜÇÜĞE sırala
-        # (reverse=True yüksek puan en üstte demek)
         skor_listesi = sorted(skor_listesi, key=lambda x: x.get('puan', 0), reverse=True)
         
-        # İlk 15 kişiyi al
-        top_15 = skor_listesi[:15]
-        
-        return jsonify(top_15)
+        return jsonify(skor_listesi[:15])
 
     except Exception as e:
         print(f"Liderlik Hatası: {e}")
@@ -156,4 +155,3 @@ def liderlik_tablosu():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
